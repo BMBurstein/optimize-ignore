@@ -102,7 +102,7 @@ def analyze(f):
             rules.append(RuleInfo(i, rule))
         except RuleError as e:
             raise RuntimeError("Could not process rule at line {}: {}\n{}\n".format(i, line, e))
-    ret = []
+    pairs = []
     redundant = set()
     for r1,r2 in itertools.combinations(rules, 2):
         if not r1.rule.contains(r2.rule):
@@ -110,16 +110,17 @@ def analyze(f):
                 r1,r2 = r2,r1
             else:
                 continue
-        ret.append((r1,r2))
+        pairs.append((r1,r2))
         redundant.add(r2.line)
-    ret = (x for x in ret if x[0].line not in redundant)
-    return ret
+    pairs = (x for x in pairs if x[0].line not in redundant)
+    return pairs, redundant, rules
 
 def report(path):
     with open(path) as f:
-        result = analyze(f)
-    for r1,r2 in result:
+        pairs, redundant, rules = analyze(f)
+    for r1,r2 in pairs:
         print('Rule at line {1.line} is redundant. See line {0.line}\n  {0.line} - {0.rule}\n  {1.line} - {1.rule}\n'.format(r1,r2))
+    print('Total rules: {}\nRedundant:   {}'.format(len(rules), len(redundant)))
 
 
 import sys
