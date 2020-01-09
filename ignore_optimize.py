@@ -69,6 +69,8 @@ class Rule:
                 raise RuleError("'{}' is not supported".format(c))
             else:
                 build.append(c)
+        if escape:
+            raise RuleError('Trailing whitespace is not supported')
         if isdir:
             build.append('/.*')
         else:
