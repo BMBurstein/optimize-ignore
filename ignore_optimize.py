@@ -90,7 +90,7 @@ class Rule:
         return all(self.re.fullmatch(d) for d in other.dummys)
 
 
-def optimize(f):
+def analyze(f):
     rules = []
     for i, line in enumerate(f, 1):
         line = line.strip()
@@ -100,12 +100,20 @@ def optimize(f):
         except RuleError as e:
             print("Could not process rule at line {}: {}\n{}\n".format(i, line, e))
             return
+    ret = []
     for r1,r2 in itertools.combinations(rules, 2):
         if not r1[1].contains(r2[1]):
             if r2[1].contains(r1[1]):
                 r1,r2 = r2,r1
             else:
                 continue
+        ret.append((r1,r2))
+    return ret
+
+def report(path):
+    with open(path) as f:
+        result = analyze(f)
+    for r1,r2 in result:
         print('Rule at line {1[0]} is redundant. See line {0[0]}\n  {0[0]} - {0[1]}\n  {1[0]} - {1[1]}\n'
                 .format(r1,r2)
         )
@@ -115,5 +123,4 @@ import sys
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        with open(sys.argv[1]) as f:
-            optimize(f)
+        report(sys.argv[1])
