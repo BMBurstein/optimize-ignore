@@ -98,8 +98,7 @@ def analyze(f):
             rule = Rule(line)
             rules.append((i, rule))
         except RuleError as e:
-            print("Could not process rule at line {}: {}\n{}\n".format(i, line, e))
-            return
+            raise RuntimeError("Could not process rule at line {}: {}\n{}\n".format(i, line, e))
     ret = []
     for r1,r2 in itertools.combinations(rules, 2):
         if not r1[1].contains(r2[1]):
