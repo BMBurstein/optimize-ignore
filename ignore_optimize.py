@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import collections
 import itertools
 import random
 import re
@@ -27,7 +28,6 @@ class Rule:
         self.rule = rule
         self.isDir = rule.endswith('/')
         self.isRooted = rule.find('/', 0, -1) >= 0
-        # self.isWild = '*' in rule
         self.makeRe()
 
     def __str__(self):
@@ -91,18 +91,19 @@ class Rule:
 
 
 def analyze(f):
+    RuleInfo = collections.namedtuple('RuleInfo', ['line', 'rule'])
     rules = []
     for i, line in enumerate(f, 1):
         line = line.strip()
         try:
             rule = Rule(line)
-            rules.append((i, rule))
+            rules.append(RuleInfo(i, rule))
         except RuleError as e:
             raise RuntimeError("Could not process rule at line {}: {}\n{}\n".format(i, line, e))
     ret = []
     for r1,r2 in itertools.combinations(rules, 2):
-        if not r1[1].contains(r2[1]):
-            if r2[1].contains(r1[1]):
+        if not r1.rule.contains(r2.rule):
+            if r2.rule.contains(r1.rule):
                 r1,r2 = r2,r1
             else:
                 continue
@@ -113,9 +114,7 @@ def report(path):
     with open(path) as f:
         result = analyze(f)
     for r1,r2 in result:
-        print('Rule at line {1[0]} is redundant. See line {0[0]}\n  {0[0]} - {0[1]}\n  {1[0]} - {1[1]}\n'
-                .format(r1,r2)
-        )
+        print('Rule at line {1.line} is redundant. See line {0.line}\n  {0.line} - {0.rule}\n  {1.line} - {1.rule}\n'.format(r1,r2))
 
 
 import sys
