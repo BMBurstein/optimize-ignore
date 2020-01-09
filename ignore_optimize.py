@@ -101,6 +101,7 @@ def analyze(f):
         except RuleError as e:
             raise RuntimeError("Could not process rule at line {}: {}\n{}\n".format(i, line, e))
     ret = []
+    redundant = set()
     for r1,r2 in itertools.combinations(rules, 2):
         if not r1.rule.contains(r2.rule):
             if r2.rule.contains(r1.rule):
@@ -108,6 +109,8 @@ def analyze(f):
             else:
                 continue
         ret.append((r1,r2))
+        redundant.add(r2.line)
+    ret = (x for x in ret if x[0].line not in redundant)
     return ret
 
 def report(path):
