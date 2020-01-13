@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import collections
 import itertools
+import os.path
 import random
 import re
 
@@ -27,13 +28,13 @@ class Rule:
     def __init__(self, rule:str):
         rule = rule.strip()
         self.rule = rule
-        self.comment = False
-        self.empty = False
+        self.isComment = False
+        self.isEmpty = False
         if not rule:
-            self.empty = True
+            self.isEmpty = True
         elif rule[0] == '#':
-            self.comment = True
-            self.empty = True
+            self.isComment = True
+            self.isEmpty = True
         else:
             self.isDir = rule.endswith('/')
             self.isRooted = rule.find('/', 0, -1) >= 0
@@ -98,7 +99,7 @@ class Rule:
 
     
     def contains(self, other:Rule):
-        if self.empty:
+        if self.isEmpty:
             return False
         return all(self.re.fullmatch(d) for d in other.dummys)
 
@@ -123,7 +124,7 @@ def analyze(f):
                 continue
         pairs.append((r1,r2))
         redundant.add(r2.line)
-    pairs = (x for x in pairs if x[0].line not in redundant)
+    pairs = [x for x in pairs if x[0].line not in redundant]
     return pairs, redundant, rules
 
 def report(path):
