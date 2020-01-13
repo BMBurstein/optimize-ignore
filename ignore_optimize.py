@@ -25,10 +25,19 @@ class RuleError(Exception):
 
 class Rule:
     def __init__(self, rule:str):
+        rule = rule.strip()
         self.rule = rule
-        self.isDir = rule.endswith('/')
-        self.isRooted = rule.find('/', 0, -1) >= 0
-        self.makeRe()
+        self.comment = False
+        self.empty = False
+        if not rule:
+            self.empty = True
+        elif rule[0] == '#':
+            self.comment = True
+            self.empty = True
+        else:
+            self.isDir = rule.endswith('/')
+            self.isRooted = rule.find('/', 0, -1) >= 0
+            self.makeRe()
 
     def __str__(self):
         return self.rule
@@ -89,6 +98,8 @@ class Rule:
 
     
     def contains(self, other:Rule):
+        if self.empty:
+            return False
         return all(self.re.fullmatch(d) for d in other.dummys)
 
 
