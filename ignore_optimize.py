@@ -127,16 +127,25 @@ def analyze(f):
     pairs = [x for x in pairs if x[0].line not in redundant]
     return pairs, redundant, rules
 
-def report(path):
+def optimize(path, report):
     with open(path) as f:
         pairs, redundant, rules = analyze(f)
-    for r1,r2 in pairs:
-        print('Rule at line {1.line} is redundant. See line {0.line}\n  {0.line} - {0.rule}\n  {1.line} - {1.rule}\n'.format(r1,r2))
-    print('Total rules: {}\nRedundant:   {}'.format(len(rules), len(redundant)))
+    if report:
+        for r1,r2 in pairs:
+            print('Rule at line {1.line} is redundant. See line {0.line}\n  {0.line} - {0.rule}\n  {1.line} - {1.rule}\n'.format(r1,r2))
+        print('Total rules: {}\nRedundant:   {}'.format(len(rules), len(redundant)))
+    else:
+        for r in rules:
+            if r.line not in redundant:
+                print(r.rule)
 
 
 import sys
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        report(sys.argv[1])
+    if len(sys.argv) == 3 and sys.argv[1] == '--report':
+        optimize(sys.argv[2], True)
+    elif len(sys.argv) == 2 and sys.argv[1] != '--report':
+        optimize(sys.argv[1], False)
+    else:
+        print("Usage: {} [--report] file".format(sys.argv[0]))
